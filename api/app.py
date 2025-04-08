@@ -1,20 +1,20 @@
 from flask import Flask, request, jsonify, render_template
-from flask_sqlalchemy import SQLAlchemy
-from models import Clothing
+from models import Clothing, db
 from utils import parse_available
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///clothings.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+db.init_app(app)
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
 
-@app.route("/request", methods=['POST'])
+@app.route("/api", methods=['POST'])
 def postRequest():
     data = request.get_json()
 
@@ -29,7 +29,7 @@ def postRequest():
                 'msg': 'Success creating a new Clothing! 👍😀'
             })
 
-@app.route('/request', methods=['GET'])
+@app.route('/api', methods=['GET'])
 def getRequest():
     # data = request.get_json()
     clothings = Clothing.query.all()
@@ -49,13 +49,13 @@ def getRequest():
             
             
         
-@app.route('/request/<int:id>', methods=['GET'])
+@app.route('/api/<int:id>', methods=['GET'])
 def getRequestId(id):
     color = request.args.get('color')
     modeling = request.args.get('modeling')
     available = request.args.get('available')
     
-    query = Clothing.query
+    query = Clothing.query.filter_by(id=id)
     
     if color:
         query = query.filter_by(color=color)
@@ -82,9 +82,9 @@ def getRequestId(id):
     
 
 
-@app.route("/request/<int:id>", methods=['PUT'])
+@app.route("/api/<int:id>", methods=['PUT'])
 def putRequest(id):
-    data = request.get_json(id)
+    data = request.get_json()
     clothing = Clothing.query.get(id)
     if not clothing:
         return jsonify({
@@ -107,6 +107,11 @@ def putRequest(id):
         'status': '200',
         'msg': f"Success updating clothing with ID {id}! 👍😀"
     })
+    
+print("Rodando o script")
 
 if __name__ == '__main__':
+    print("Rodando dentro do __main__")
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
