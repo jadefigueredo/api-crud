@@ -20,7 +20,7 @@ class Clothing(db.Model):
             self.quantity = int(data['quantity'])
 
         
-    def __repr__(self): #método especial usado para definir a representação oficial de um objeto
+    def __repr__(self):
         return f'<Clothing id={self.id}, modeling={self.modeling}>'
 
     def serialize(self):

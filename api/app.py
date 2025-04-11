@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, render_template
+from database import insert, view, update, delete
 from models import Clothing, db
 from utils import parse_available
 
@@ -17,11 +18,8 @@ def index():
 @app.route("/api", methods=['POST'])
 def postRequest():
     data = request.get_json()
-
     new_clothing = Clothing.from_dict(data) 
-    print('new clothing: ', new_clothing.serialize())
-    db.session.add(new_clothing)
-    db.session.commit()
+    insert(new_clothing)
     return jsonify({
                 'error': '',
                 'res': new_clothing.serialize(),
@@ -32,7 +30,7 @@ def postRequest():
 @app.route('/api', methods=['GET'])
 def getRequest():
     # data = request.get_json()
-    clothings = Clothing.query.all()
+    clothings = view()
     
     if not clothings:
             return jsonify({
@@ -42,7 +40,7 @@ def getRequest():
         })
     return jsonify({
             'error': '',
-            'res': [c.serialize() for c in clothings],
+            'res': clothings,
             'status': '200',
             'msg': 'Success getting all clothings in closet! 👍😀'
         })        
@@ -51,23 +49,10 @@ def getRequest():
         
 @app.route('/api/<int:id>', methods=['GET'])
 def getRequestId(id):
-    color = request.args.get('color')
-    modeling = request.args.get('modeling')
-    available = request.args.get('available')
     
-    query = Clothing.query.filter_by(id=id)
-    
-    if color:
-        query = query.filter_by(color=color)
-    if modeling:
-        query = query.filter_by(modeling=modeling)
-    if available is not None:
-        available_bool = available.lower() == 'true'
-        query = query.filter_by(available=available_bool)    
-        
-    results = query.all()
-    
-    if not results:
+    clothing = Clothing.query.filter_by(id=id)
+    # lembrar de buscar o id específico da rota
+    if not clothing:
         return jsonify({
             'error': 'No clothing items found with the specified criteria! ❌',
             'res': '',
@@ -75,7 +60,7 @@ def getRequestId(id):
         })
     return jsonify({
         'error': '',
-        'res': [c.serialize() for c in results],
+        'res': clothing,
         'status': '200',
         'msg': 'Success filtering clothings! 👍😀'
     })
@@ -97,15 +82,23 @@ def putRequest(id):
     clothing.quantity = data.get('quantity', clothing.quantity)
     clothing.color = data.get('color', clothing.color)
     clothing.modeling = data.get('modeling', clothing.modeling)
-    
-    db.session.commit()
-    
+    update(clothing)    
     
     return jsonify({
         'error': '',
         'res': clothing.serialize(),
         'status': '200',
         'msg': f"Success updating clothing with ID {id}! 👍😀"
+    })
+    
+@app.route("/api/<int:id>", methods=['DELETE'])
+def deleteRequest(id):
+    delete(id)
+    return jsonify({
+        'error': '',
+        'res': '',
+        'status': '200',
+        'msg': f"Success deleting clothing with ID {id}! 👍😀"
     })
     
 print("Rodando o script")
