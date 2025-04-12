@@ -1,71 +1,79 @@
 from flask import Flask, request, jsonify, render_template
-from database import insert, view, update, delete
+from database import *
 from models import Clothing, db
 from utils import parse_available
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///clothings.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# @app.route('/')
+# def index():
+#     return render_template('index.html')
 
 
-@app.route("/api", methods=['POST'])
+@app.route("/api/insert", methods=['POST'])
 def postRequest():
     data = request.get_json()
-    new_clothing = Clothing.from_dict(data) 
+    
+    new_clothing = Clothing(
+        available=data.get(('available', True)),
+        quantity=data.get('quantity', ''),
+        color=data.get('color', ''),
+        modeling=data.get('modeling', '')
+    )
     insert(new_clothing)
     return jsonify({
                 'error': '',
                 'res': new_clothing.serialize(),
-                'status': '200',
-                'msg': 'Success creating a new Clothing! 👍😀'
+                'status': '201',
+                'msg': 'HTTP 201 Created! Success creating new clothing! 👍😀'
             })
 
 @app.route('/api', methods=['GET'])
 def getRequest():
-    # data = request.get_json()
     clothings = view()
-    
     if not clothings:
             return jsonify({
             'error': 'You have not entered any clothes yet.! 👕👚',
             'res': '',
             'status': '200'
         })
+            
+    serialized_clothings = [item.serialize() for item in clothings]
     return jsonify({
             'error': '',
-            'res': clothings,
+            'res': serialized_clothings,
             'status': '200',
-            'msg': 'Success getting all clothings in closet! 👍😀'
+            'msg': 'HTTP 200 Ok - Success getting all clothings in closet! 👍😀'
         })        
             
             
         
 @app.route('/api/<int:id>', methods=['GET'])
 def getRequestId(id):
-    
-    clothing = Clothing.query.filter_by(id=id)
-    # lembrar de buscar o id específico da rota
-    if not clothing:
+    get_clothing_by_id = Clothing.query.get(id)
+
+    if not get_clothing_by_id:
         return jsonify({
-            'error': 'No clothing items found with the specified criteria! ❌',
+            'error': f'Not Found - No clothing items found with the specified {id}! ❌',
             'res': '',
             'status': '404'
         })
     return jsonify({
         'error': '',
-        'res': clothing,
+        'res': get_clothing_by_id.serialize(),
         'status': '200',
-        'msg': 'Success filtering clothings! 👍😀'
+        'msg': 'HTTP 200 Ok - Success filtering clothings! 👍😀'
     })
     
-
 
 @app.route("/api/<int:id>", methods=['PUT'])
 def putRequest(id):
@@ -91,15 +99,37 @@ def putRequest(id):
         'msg': f"Success updating clothing with ID {id}! 👍😀"
     })
     
-@app.route("/api/<int:id>", methods=['DELETE'])
+@app.route("/api/delete/<int:id>", methods=['DELETE'])
 def deleteRequest(id):
-    delete(id)
+    data = request.get_json()
+    
+    clothing_to_be_deleted = 
+    # buscar id na tabela
+    # retornar id e enviar id na requisição
+    
+    delete(clothing_to_be_deleted) 
+    
+    if not clothing_to_be_deleted:
+        return jsonify({
+            'error': f"Clothing with ID '{id}' not found! ⛔",
+            'res': '',
+            'status': '404'
+        })
+         
     return jsonify({
         'error': '',
         'res': '',
         'status': '200',
         'msg': f"Success deleting clothing with ID {id}! 👍😀"
     })
+    
+    
+@app.before_request
+def log_request_info():
+    print(f"Request: {request.method} {request.url}")
+#    print(f"Request Body: {request.get_json()}")
+    print(f"Request Headers: {request.headers}")
+
     
 print("Rodando o script")
 

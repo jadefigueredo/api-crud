@@ -1,5 +1,15 @@
 
+### checklist do que falta 
 
+[] Adicionar patch
+[]
+
+
+
+### Aprendizados
+
+- Uso de CORS 
+- uso de função para trazer dados do banco
 
 
 ### Referências

@@ -21,20 +21,14 @@ def populate_database():
     
     db.session.commit()  
 
-def get_clothing_by_id(id):
-    clothing_id = Clothing.query.get(id)
-    if clothing_id:
-        return clothing_id
-    else:
-        return None
-    
     
 # CREATE
 def insert(clothing):
     db.session.add(clothing)
     db.session.commit()
+    return 
 
-# READ
+# READ # pega todas as roupas e mostra a lista do que está no banco
 def view():
     return Clothing.query.all()
 
@@ -44,7 +38,6 @@ def update(clothing):
 
 #  DELETE
 def delete(clothing):
-    clothing = Clothing.query.get(id)
-    if clothing:
-        db.session.delete(clothing)
-        db.session.commit()
+    db.session.delete(clothing)
+    db.session.commit()
+    return
