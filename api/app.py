@@ -85,12 +85,11 @@ def putRequest(id):
             'res': '',
             'status': '404'
         })
-    
     clothing.available = parse_available(data.get('available', clothing.available))
     clothing.quantity = data.get('quantity', clothing.quantity)
     clothing.color = data.get('color', clothing.color)
     clothing.modeling = data.get('modeling', clothing.modeling)
-    update(clothing)    
+    clothing = update(clothing)
     
     return jsonify({
         'error': '',
@@ -101,13 +100,7 @@ def putRequest(id):
     
 @app.route("/api/delete/<int:id>", methods=['DELETE'])
 def deleteRequest(id):
-    data = request.get_json()
-    
-    clothing_to_be_deleted = 
-    # buscar id na tabela
-    # retornar id e enviar id na requisição
-    
-    delete(clothing_to_be_deleted) 
+    clothing_to_be_deleted = Clothing.query.get(id)
     
     if not clothing_to_be_deleted:
         return jsonify({
@@ -115,7 +108,7 @@ def deleteRequest(id):
             'res': '',
             'status': '404'
         })
-         
+    delete(clothing_to_be_deleted) 
     return jsonify({
         'error': '',
         'res': '',
@@ -127,7 +120,7 @@ def deleteRequest(id):
 @app.before_request
 def log_request_info():
     print(f"Request: {request.method} {request.url}")
-#    print(f"Request Body: {request.get_json()}")
+ #   print(f"Request Body: {request.get_json()}")
     print(f"Request Headers: {request.headers}")
 
     

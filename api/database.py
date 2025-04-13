@@ -28,13 +28,14 @@ def insert(clothing):
     db.session.commit()
     return 
 
-# READ # pega todas as roupas e mostra a lista do que está no banco
+# READ 
 def view():
     return Clothing.query.all()
 
 #  UPDATE
 def update(clothing):
     db.session.commit()
+    return clothing
 
 #  DELETE
 def delete(clothing):
