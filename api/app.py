@@ -8,8 +8,8 @@ import logging
 app = Flask(__name__)
 CORS(app)
 
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///clothings.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgresadmin@localhost:5432/clothings'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///clothings.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -36,8 +36,9 @@ def postRequest():
                     'res': new_clothing.serialize(),
                     'status': '201',
                     'msg': 'Created'
-                })
+                }), 201
     except Exception as e:
+        
         logging.info('Erro ao inserir na tabela')
         return jsonify({
         'error': 'Bad Gateway',
@@ -48,13 +49,7 @@ def postRequest():
 @app.route('/api/get/clothings', methods=['GET'])
 def getRequest():
     try:
-        clothings = view()            
-            #     return jsonify({
-            #     'res': '',
-            #     'status': '200',
-            #     'msg': 'Ok'
-            # })
-                
+        clothings = view()               
         serialized_clothings = [item.serialize() for item in clothings]
         return jsonify({
                 'res': serialized_clothings,
@@ -62,68 +57,80 @@ def getRequest():
                 'msg': 'Ok'
             })
     except Exception as e:
-        logging.info('Sem conteúdo')        
+        
+        logging.info('Não encontrado')   
+        return jsonify({
+        'error': '',
+        'status': '404',
+        'details': str(e),
+        }), 404  
             
 @app.route('/api/get/<int:id>', methods=['GET'])
 def getRequestId(id):
-    get_clothing_by_id = Clothing.query.get(id)
     
+    try:
+        get_clothing_by_id = Clothing.query.get(id)
     
-
-    if not get_clothing_by_id:
         return jsonify({
+            'error': '',
+            'res': get_clothing_by_id.serialize(),
+            'status': '200',
+            'msg': 'Ok'
+        }), 200
+    except Exception as e:
+            return jsonify({
             'error': f'Not Found - No clothing items found with the specified {id}',
             'res': '',
             'status': '404'
-        })
-    return jsonify({
-        'error': '',
-        'res': get_clothing_by_id.serialize(),
-        'status': '200',
-        'msg': 'Ok'
-    })
+        }), 404
+
     
 
 @app.route("/api/put/<int:id>", methods=['PUT'])
 def putRequest(id):
-    data = request.get_json()
-    clothing = Clothing.query.get(id)
-    if not clothing:
-        return jsonify({
-            'error': "Not Found",
-            'res': '',
-            'status': '404'
-        })
-    clothing.available = parse_available(data.get('available', clothing.available))
-    clothing.quantity = data.get('quantity', clothing.quantity)
-    clothing.color = data.get('color', clothing.color)
-    clothing.modeling = data.get('modeling', clothing.modeling)
-    clothing = update(clothing)
     
-    return jsonify({
-        'error': '',
+    try:
+        data = request.get_json()
+        clothing = Clothing.query.get(id)
+        clothing.available = parse_available(data.get('available', clothing.available))
+        clothing.quantity = data.get('quantity', clothing.quantity)
+        clothing.color = data.get('color', clothing.color)
+        clothing.modeling = data.get('modeling', clothing.modeling)
+        clothing = update(clothing)
+        
+        return jsonify({
+        'details': str(e),
         'res': clothing.serialize(),
         'status': '200',
         'msg': "Ok"
-    })
+    }), 200
+    except Exception as e:
+            return jsonify({
+            'error': f"Clothing with ID '{id}' not found! ⛔",
+            'res': '',
+            'status': '404'
+        }), 404
+    
     
 @app.route("/api/delete/<int:id>", methods=['DELETE'])
 def deleteRequest(id):
-    clothing_to_be_deleted = Clothing.query.get(id)
     
-    if not clothing_to_be_deleted:
+    try:
+        clothing_to_be_deleted = Clothing.query.get(id)        
+        delete(clothing_to_be_deleted) 
+        
+        return jsonify({
+            'error': '',
+            'res': '',
+            'status': '200',
+            'msg': "Ok"
+        }), 200
+    except Exception as e:
         return jsonify({
             'error': f"'{id}' not found",
             'res': '',
             'status': '404'
-        })
-    delete(clothing_to_be_deleted) 
-    return jsonify({
-        'error': '',
-        'res': '',
-        'status': '200',
-        'msg': "Ok"
-    })
+        }), 404
 
 # tomar cuidado com o app before request pq ele pode causar erros e eu posso não conseguir rodar corretamente
     
@@ -140,4 +147,6 @@ if __name__ == '__main__':
     print("Rodando dentro do __main__")
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+        from database import populate_database
+        populate_database()
+    app.run(host='0.0.0.0', debug=True)

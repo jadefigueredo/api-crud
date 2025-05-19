@@ -2,12 +2,12 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-class Clothing(db.Model):
+class Clothing(db.Model):    
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     available = db.Column(db.Boolean, default=True)
-    quantity = db.Column(db.Integer)
-    color = db.Column(db.String(50))
-    modeling = db.Column(db.String(100))
+    quantity = db.Column(db.Integer, nullable=False)
+    color = db.Column(db.String(50), nullable=False)
+    modeling = db.Column(db.String(100), nullable=False)
     
     def update_from_dict(self, data):
         if 'available' in data:
