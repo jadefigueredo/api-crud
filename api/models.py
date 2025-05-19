@@ -31,3 +31,4 @@ class Clothing(db.Model):
             'color': self.color,
             'modeling': self.modeling,
     }
+        
