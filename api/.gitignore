@@ -5,3 +5,4 @@ venv/
 *.db
 instance/
 *.sqlite3
+docker-compose.yml

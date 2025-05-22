@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:13
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgresadmin
+      POSTGRES_DB: clothings
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  flask-app:
+    build: .
+    container_name: flask_clothings
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    environment:
+      - SQLALCHEMY_DATABASE_URI=postgresql://postgres:postgresadmin@db:5432/clothings
+    volumes:
+      - .:/app
+
+volumes:
+  postgres_data:
