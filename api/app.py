@@ -4,12 +4,16 @@ from database import *
 from models import Clothing, db
 from utils import parse_available
 from flask_cors import CORS
+import os
 import logging
 
 app = Flask(__name__)
 CORS(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/clothings'
+POSTGRES_USER = os.environ.get('POSTGRES_USER')
+POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/clothings'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
