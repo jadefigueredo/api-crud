@@ -37,4 +37,3 @@ def delete(clothing):
     db.session.commit()
     return
 
-print(populate_database())
