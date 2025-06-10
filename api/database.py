@@ -8,7 +8,6 @@ def populate_database():
         {"available": True, "modeling": "blouse", "color": "white", "quantity": 4},
         {"available": True, "modeling": "dress", "color": "white", "quantity": 3},
     ]
-    print(clothings)
     for item in clothings:
         clothing = Clothing(**item)
         db.session.add(clothing)
