@@ -2,7 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-class Clothing(db.Model):    
+class Clothing(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     available = db.Column(db.Boolean, default=True)
     quantity = db.Column(db.Integer, nullable=False)
